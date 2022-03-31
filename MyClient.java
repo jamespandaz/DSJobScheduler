@@ -5,36 +5,48 @@ public class MyClient {
         try{      
             Socket socket=new Socket("localhost",50000); //new socket for connection with port 
             BufferedReader dis = new BufferedReader(new InputStreamReader(socket.getInputStream())); //buffer reader to read 
-            DataOutputStream dout=new DataOutputStream(socket.getOutputStream());  //output stream to output text
+            DataOutputStream dout = new DataOutputStream(socket.getOutputStream());  //output stream to output text
             String str;
+            String currJob;
 
             dout.write(("HELO\n").getBytes());  //handshake start
             dout.flush(); 
 
             str = dis.readLine();  //recieve
-            System.out.println("Server message= "+str);
+            System.out.println("SERVER: "+str);
             dout.flush();
 
             dout.write(("AUTH 45961735\n").getBytes()); //auth username
             dout.flush();
 
             str = dis.readLine();  //recieve
-            System.out.println("Server message= "+str);
+            System.out.println("SERVER: "+str);
             dout.flush();
 
             while (!str.equals("NONE")){ // check if the message is not none
                 dout.write(("REDY\n").getBytes()); //send ready handshake
                 dout.flush();
+    
+                str = dis.readLine();  //receive
+                System.out.println("SERVER: "+str);
+                currJob = str;
+                dout.flush();
                 
-                str = dis.readLine();  //receive
-                System.out.println("Server message= "+str);
-                dout.flush();
-
-                dout.write(("GETS\n").getBytes());
+                dout.write(("GETS ALL\n").getBytes()); // get server information
                 dout.flush();
 
                 str = dis.readLine();  //receive
-                System.out.println("Server message= "+str);
+                System.out.println("SERVER: "+str);
+                dout.flush();
+
+                dout.write(("OK\n").getBytes());
+                dout.flush();
+
+                str = dis.readLine();  //receive
+                System.out.println("SERVER: "+str);
+                dout.flush();
+
+                dout.write(("OK\n").getBytes());
                 dout.flush();
             }
 
@@ -42,7 +54,7 @@ public class MyClient {
             dout.flush();
 
             str = dis.readLine();  
-            System.out.println("Server message= "+str);
+            System.out.println("SERVER: "+str);
             dout.flush();
 
             dout.close();  
