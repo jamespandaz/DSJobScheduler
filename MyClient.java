@@ -1,5 +1,7 @@
 import java.io.*;  
 import java.net.*;  
+import java.util.Arrays;
+
 public class MyClient {  
     public static void main(String[] args) {  
         try{      
@@ -9,6 +11,7 @@ public class MyClient {
             String str;
             String currJob;
             String getsData;
+            int nRecs;
 
             dout.write(("HELO\n").getBytes());  //handshake start
             dout.flush(); 
@@ -39,7 +42,10 @@ public class MyClient {
                 System.out.println("SERVER: "+str);
                 
                 getsData = str; // store the gets All data into a string
-                System.out.println("getsData= "+getsData); // print the gets data check what it actaully is 
+                nRecs = getsData.charAt(6);
+
+                System.out.println("nRecs= "+nRecs);
+
                 dout.flush();
 
                 dout.write(("OK\n").getBytes());
