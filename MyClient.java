@@ -8,6 +8,7 @@ public class MyClient {
             DataOutputStream dout = new DataOutputStream(socket.getOutputStream());  //output stream to output text
             String str;
             String currJob;
+            String getsData;
 
             dout.write(("HELO\n").getBytes());  //handshake start
             dout.flush(); 
@@ -32,11 +33,13 @@ public class MyClient {
                 currJob = str;
                 dout.flush();
                 
-                dout.write(("GETS ALL\n").getBytes()); // get server information
+                dout.write(("GETS All\n").getBytes()); // get server information
                 dout.flush();
-
                 str = dis.readLine();  //receive
                 System.out.println("SERVER: "+str);
+                
+                getsData = str; // store the gets All data into a string
+                System.out.println("getsData= "+getsData); // print the gets data check what it actaully is 
                 dout.flush();
 
                 dout.write(("OK\n").getBytes());
