@@ -1,6 +1,5 @@
 import java.io.*;  
-import java.net.*;  
-import java.util.Arrays;
+import java.net.*;
 
 public class MyClient {  
     public static void main(String[] args) {  
@@ -42,13 +41,19 @@ public class MyClient {
                 System.out.println("SERVER: "+str);
                 
                 getsData = str; // store the gets All data into a string
-                nRecs = getsData.charAt(6);
-
-                System.out.println("nRecs= "+nRecs);
-
+                nRecs = Character.getNumericValue(getsData.charAt(5)); // read data and get the nRecs (number of servers)
                 dout.flush();
 
-                dout.write(("OK\n").getBytes());
+                dout.write(("OK\n").getBytes()); // acknlowedge the data
+                dout.flush();
+              
+                for (int i = 0; i < nRecs; i++){
+                    str = dis.readLine();
+                    System.out.println("SERVER: "+str);
+                    dout.flush();
+                }
+                
+                dout.write(("OK\n").getBytes()); // acknlowedge the data
                 dout.flush();
 
                 str = dis.readLine();  //receive
