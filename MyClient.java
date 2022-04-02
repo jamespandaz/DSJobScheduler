@@ -1,5 +1,6 @@
 import java.io.*;  
 import java.net.*;
+import java.util.Arrays;
 
 public class MyClient {  
     public static void main(String[] args) {  
@@ -26,6 +27,7 @@ public class MyClient {
             System.out.println("SERVER: "+str);
             dout.flush();
 
+            int jobNo = 0;
             while (!str.equals("NONE")){ // check if the message is not none
                 dout.write(("REDY\n").getBytes()); //send ready handshake
                 dout.flush();
@@ -46,13 +48,18 @@ public class MyClient {
 
                 dout.write(("OK\n").getBytes()); // acknlowedge the data
                 dout.flush();
-              
-                for (int i = 0; i < nRecs; i++){
+                
+                String[] serverList = new String[nRecs]; // make array as big as the number of servers
+
+                for (int i = 0; i < nRecs; i++){ // loop for the amount for servers
                     str = dis.readLine();
+                    serverList[i] = str; // write server info into array
                     System.out.println("SERVER: "+str);
                     dout.flush();
                 }
                 
+                int serverNumber = serverList.length;
+
                 dout.write(("OK\n").getBytes()); // acknlowedge the data
                 dout.flush();
 
@@ -60,7 +67,13 @@ public class MyClient {
                 System.out.println("SERVER: "+str);
                 dout.flush();
 
-                dout.write(("OK\n").getBytes());
+                dout.write(("SCHD "+jobNo+serverList[serverNumber]+"\n").getBytes());
+
+                dout.write(("OK\n").getBytes()); // acknlowedge the data
+                dout.flush();
+
+                str = dis.readLine();  //receive
+                System.out.println("SERVER: "+str);
                 dout.flush();
             }
 
