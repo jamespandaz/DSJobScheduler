@@ -1,2 +1,4 @@
-# comp3100-stage1
-Client for ds-sim demonstrating a Largest Round Robin algorithm to schedule jobs
+# COMP3100 Project
+---
+## Distrubuted Systems Job Scheduler
+Job schdeuling in a simulated distrubuted system using a client-server model
