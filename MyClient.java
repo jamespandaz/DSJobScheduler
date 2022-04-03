@@ -1,7 +1,6 @@
 import java.io.*;  
 import java.net.*;
 import java.io.File;
-import java.util.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
@@ -69,18 +68,18 @@ public class MyClient {
                     currJob = str.split(" ");
                 }
 
-                if (str.equals("NONE")) { //if there are no more jobs left then leave while loop
+                if (str.equals("NONE")) { //if there are no more jobs left then leave while loop and go to exit
                     break;
                 }
 
-                avail(currJob, dis, dout);
+                avail(currJob, dis, dout); //schedule a job
 
                 str = dis.readLine();  //receive
                 System.out.println("SERVER: "+str);
                 dout.flush();
             }
 
-            dout.write(("QUIT\n").getBytes());
+            dout.write(("QUIT\n").getBytes()); // quit after all jobs are done
             dout.flush();
 
             str = dis.readLine();  
@@ -93,7 +92,7 @@ public class MyClient {
     
     }
 
-    public static Document readFile(String path) {
+    public static Document readFile(String path) { // to read the system.xml file (uses document builder to parse)
         try {
             File file = new File(path);
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -109,14 +108,14 @@ public class MyClient {
         }
     }
 
-    public static String[][] getServerList(NodeList nList){
+    public static String[][] getServerList(NodeList nList){ // create a server list using a node list
         String[][] xml = new String[nList.getLength()][2];
             for(int i =0 ; i< nList.getLength(); i++){
                 Node nNode = nList.item(i);
                 if(nNode.getNodeType()== Node.ELEMENT_NODE){
                     Element eElement = (Element) nNode;
                     xml[i][0]=eElement.getAttribute("type");
-                    xml[i][1]= eElement.getAttribute("coreCount").toString();
+                    xml[i][1]= eElement.getAttribute("coreCount").toString(); // parses corecount into stirng and places in the node list
                 }
             }
 
@@ -124,36 +123,36 @@ public class MyClient {
         return xml;
     }
 
-    public static void avail(String [] job,BufferedReader din, DataOutputStream dout) {
+    public static void avail(String [] job,BufferedReader din, DataOutputStream dout) { // the schd command
         String in;
         String [] inarr;
 
         try{
 
-            String avail="GETS Avail "+job[4]+" "+job[5]+" "+job[6]+"\n";
+            String avail="GETS Avail "+job[4]+" "+job[5]+" "+job[6]+"\n"; //look at availble servers
             dout.write(avail.getBytes());
-            in=din.readLine();
-            inarr=in.split(" ");
+            in=din.readLine(); 
+            inarr=in.split(" "); //put into array
 
-            if(inarr[1].equals("0")){ // If there are no servers available then pass to other function which uses capable
+            if(inarr[1].equals("0")){ // checks if no servers are avaible, then passes it onto largest server again
                 dout.write("OK\n".getBytes());
-                String check=din.readLine();//Negates the .
+                String check=din.readLine();//removes the . reply from server
                 handleGETS(job, din, dout);
                 return;
             }
 
-            inarr=in.split(" ");
+            inarr=in.split(" "); //places data into array
 
             dout.write("OK\n".getBytes());
 
-            String [] capableArray = new String [Integer.parseInt(inarr[1])]; //Array of capable servers
+            String [] capableArray = new String [Integer.parseInt(inarr[1])]; //populate the capable server list
             for(int i=0;i<Integer.parseInt(inarr[1]);i++){
                capableArray[i]=din.readLine();
             }
 
             int bestIDX=0;
             int bestCore=0;
-            for(int j=0;j<Integer.parseInt(inarr[1]);j++){  //Find the serever with the largest core count
+            for(int j=0;j<Integer.parseInt(inarr[1]);j++){  //Find the server with the largest core count
                 String [] test=capableArray[j].split(" ");
                 if(Integer.parseInt(test[4])>bestCore||j==0){
                     bestIDX=j;
@@ -163,10 +162,10 @@ public class MyClient {
 
             dout.write("OK\n".getBytes());
 
-            String check=din.readLine();// Negates the .
+            String check=din.readLine();// removes . from server reply
 
-            String []capableServer=capableArray[bestIDX].split(" ");
-            String job_schedule = "SCHD" + " " + job[2] + " " + capableServer[0] + " " + capableServer[1] + "\n"; //Schedule the job
+            String []capableServer=capableArray[bestIDX].split(" "); //splits input into something useable
+            String job_schedule = "SCHD" + " " + job[2] + " " + capableServer[0] + " " + capableServer[1] + "\n"; // schdules job
             dout.write(job_schedule.getBytes());
 
 
@@ -177,8 +176,7 @@ public class MyClient {
         }
     }
 
-        //If there are no available servers, schdule this job to the server with the least waiting time
-        public static void handleGETS(String [] job,BufferedReader din, DataOutputStream dout) {
+        public static void handleGETS(String [] job,BufferedReader din, DataOutputStream dout) { //If there are no available servers, put job onto server with the most cores
             String in;
             String [] inarr;
     
@@ -197,21 +195,21 @@ public class MyClient {
     
                 dout.write("OK\n".getBytes());
     
-                String check=din.readLine();// Negates the .
+                String check=din.readLine();// removes . server reply
     
                 int bestIDX=0;
                 int bestCore=0;
-                for(int j=0;j<Integer.parseInt(inarr[1]);j++){  //Find the serever with the largest core count
+                for(int j=0;j<Integer.parseInt(inarr[1]);j++){  //Find server with largest core count 
                     String [] test=capableArray[j].split(" ");
                     if(Integer.parseInt(test[4])>bestCore||j==0){
                         bestIDX=j;
                         bestCore=Integer.parseInt(test[4]);
                     }
                  }
-                 
+
                 String []capableServer=capableArray[bestIDX].split(" ");
-                String job_schedule = "SCHD" + " " + job[2] + " " + capableServer[0] + " " + capableServer[1] + "\n";
-                dout.write(job_schedule.getBytes()); //Schedule the job
+                String job_schedule = "SCHD" + " " + job[2] + " " + capableServer[0] + " " + capableServer[1] + "\n"; //schdules the job 
+                dout.write(job_schedule.getBytes());
             }
     
             catch (Exception e) {
