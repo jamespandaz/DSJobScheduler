@@ -17,9 +17,6 @@ public class MyClient {
             BufferedReader dis = new BufferedReader(new InputStreamReader(socket.getInputStream())); //buffer reader to read 
             DataOutputStream dout = new DataOutputStream(socket.getOutputStream());  //output stream to output text
             String str;
-            String[] currJob;
-            String getsData;
-            int nRecs;
 
             dout.write(("HELO\n").getBytes());  //handshake start
             dout.flush(); 
@@ -36,16 +33,18 @@ public class MyClient {
             dout.flush();
 
             if (str.equals("OK")){
+                
                 Document doc = readFile("./ds-system.xml"); // read the ds system for server info
 
-                NodeList nList = doc.getElementsByTagName("server"); // find server names
+                NodeList nList = doc.getElementsByTagName("servers"); // find server names in xml
                 String[][] servers = getServerList(nList); //put them in list
                 
                 int max_core_count = Integer.MIN_VALUE; // storage for max core count
                 String server_max = "";
                 String server_id = "";
-                
-                for(int i = 0; i< servers.length; i++) { //go through list and try to find which is biggest
+
+                for(int i = 0; i< servers.length - 1; i++) { //go through list and try to find the maximum amount of cores
+                    System.out.println(servers[i][1]);
                     if (Integer.parseInt(servers[i][1]) > max_core_count) {
                         max_core_count = Integer.parseInt(servers[i][1]);
                         server_max = servers[i][0];
@@ -60,7 +59,7 @@ public class MyClient {
     
                 str = dis.readLine();  //receive
                 System.out.println("SERVER: "+str);
-                currJob = str.split(" ",0);
+                String[] currJob = str.split(" ",0);
                 dout.flush();
 
 
@@ -74,8 +73,7 @@ public class MyClient {
                     break;
                 }
 
-                dout.write(("OK\n").getBytes()); // acknlowedge the data
-                dout.flush();
+                avail(currJob, dis, dout);
 
                 str = dis.readLine();  //receive
                 System.out.println("SERVER: "+str);
@@ -125,4 +123,99 @@ public class MyClient {
 
         return xml;
     }
+
+    public static void avail(String [] job,BufferedReader din, DataOutputStream dout) {
+        String in;
+        String [] inarr;
+
+        try{
+
+            String avail="GETS Avail "+job[4]+" "+job[5]+" "+job[6]+"\n";
+            dout.write(avail.getBytes());
+            in=din.readLine();
+            inarr=in.split(" ");
+
+            if(inarr[1].equals("0")){ // If there are no servers available then pass to other function which uses capable
+                dout.write("OK\n".getBytes());
+                String check=din.readLine();//Negates the .
+                handleGETS(job, din, dout);
+                return;
+            }
+
+            inarr=in.split(" ");
+
+            dout.write("OK\n".getBytes());
+
+            String [] capableArray = new String [Integer.parseInt(inarr[1])]; //Array of capable servers
+            for(int i=0;i<Integer.parseInt(inarr[1]);i++){
+               capableArray[i]=din.readLine();
+            }
+
+            int bestIDX=0;
+            int bestCore=0;
+            for(int j=0;j<Integer.parseInt(inarr[1]);j++){  //Find the serever with the largest core count
+                String [] test=capableArray[j].split(" ");
+                if(Integer.parseInt(test[4])>bestCore||j==0){
+                    bestIDX=j;
+                    bestCore=Integer.parseInt(test[4]);
+                }
+             }
+
+            dout.write("OK\n".getBytes());
+
+            String check=din.readLine();// Negates the .
+
+            String []capableServer=capableArray[bestIDX].split(" ");
+            String job_schedule = "SCHD" + " " + job[2] + " " + capableServer[0] + " " + capableServer[1] + "\n"; //Schedule the job
+            dout.write(job_schedule.getBytes());
+
+
+
+        }
+        catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+        //If there are no available servers, schdule this job to the server with the least waiting time
+        public static void handleGETS(String [] job,BufferedReader din, DataOutputStream dout) {
+            String in;
+            String [] inarr;
+    
+            try{
+                String capable="GETS Capable "+job[4]+" "+job[5]+" "+job[6]+"\n";
+                dout.write(capable.getBytes());
+                in=din.readLine();
+    
+                inarr=in.split(" ");
+                dout.write("OK\n".getBytes());
+                String [] capableArray = new String [Integer.parseInt(inarr[1])];
+    
+                for(int i=0;i<Integer.parseInt(inarr[1]);i++){
+                   capableArray[i]=din.readLine();
+                }
+    
+                dout.write("OK\n".getBytes());
+    
+                String check=din.readLine();// Negates the .
+    
+                int bestIDX=0;
+                int bestCore=0;
+                for(int j=0;j<Integer.parseInt(inarr[1]);j++){  //Find the serever with the largest core count
+                    String [] test=capableArray[j].split(" ");
+                    if(Integer.parseInt(test[4])>bestCore||j==0){
+                        bestIDX=j;
+                        bestCore=Integer.parseInt(test[4]);
+                    }
+                 }
+                 
+                String []capableServer=capableArray[bestIDX].split(" ");
+                String job_schedule = "SCHD" + " " + job[2] + " " + capableServer[0] + " " + capableServer[1] + "\n";
+                dout.write(job_schedule.getBytes()); //Schedule the job
+            }
+    
+            catch (Exception e) {
+                System.out.println(e);
+            }
+        }
 }  
