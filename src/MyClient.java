@@ -130,7 +130,7 @@ public class MyClient {
 
         try{
 
-            String avail="GETS Avail "+job[4]+" "+job[5]+" "+job[6]+"\n"; //look at availble servers
+            String avail="GETS Capable "+job[4]+" "+job[5]+" "+job[6]+"\n"; //look at availble servers
             dout.write(avail.getBytes());
             in=din.readLine(); 
             inarr=in.split(" "); //put into array
