@@ -130,7 +130,7 @@ public class MyClient {
 
         try{
 
-            String avail="GETS Capable "+job[4]+" "+job[5]+" "+job[6]+"\n"; //look at availble servers
+            String avail="GETS Avail "+job[4]+" "+job[5]+" "+job[6]+"\n"; //look at availble servers
             dout.write(avail.getBytes());
             in=din.readLine(); 
             inarr=in.split(" "); //put into array
@@ -153,13 +153,7 @@ public class MyClient {
 
             int bestIDX=0;
             int bestCore=0;
-            for(int j=0;j<Integer.parseInt(inarr[1]);j++){  //Find the server with the largest core count
-                String [] test=capableArray[j].split(" ");
-                if(Integer.parseInt(test[4])>bestCore||j==0){
-                    bestIDX=j;
-                    bestCore=Integer.parseInt(test[4]);
-                }
-             }
+
 
             dout.write("OK\n".getBytes());
 
